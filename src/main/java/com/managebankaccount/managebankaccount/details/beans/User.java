@@ -1,7 +1,5 @@
 package com.managebankaccount.managebankaccount.details.beans;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 
 import javax.accessibility.AccessibleContext;
 

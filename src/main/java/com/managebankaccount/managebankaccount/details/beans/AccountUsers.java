@@ -1,17 +1,14 @@
 package com.managebankaccount.managebankaccount.details.beans;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 @Entity
 public class AccountUsers {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue
     private long idAccount;
     private long accountNumber;
     private String userId;
@@ -21,6 +18,7 @@ public class AccountUsers {
 
     }
     public AccountUsers(long idAccount, long accountNumber, String userId, String password, double balanceAmount) {
+        super();
         this.idAccount = idAccount;
         this.accountNumber = accountNumber;
         this.userId = userId;
