@@ -154,15 +154,22 @@ public class AccountServiceImpl {
         } else if (users.isEmpty()) {
             throw new NullPointerException(Constant.emptyList);
         } else {
+            boolean checkTrue = false;
             for (int i = 0; i < users.size(); i++) {
+
                 String nameUpperCase = name.toUpperCase();
                 String nameUser = users.get(i).getName().toUpperCase();
-                if (nameUpperCase.equals(nameUser)) {
+
+                if (nameUser.equals(nameUpperCase)) {
                     account = accountUsers.get(i);
-                } else {
-                    throw new NullPointerException(Constant.noName);
+                    checkTrue = true;
+                    break;
                 }
             }
+            if(!checkTrue) {
+                throw new NullPointerException(Constant.noName);
+            }
+
         }
         return account;
     }
@@ -174,14 +181,18 @@ public class AccountServiceImpl {
         } else if (users.isEmpty()) {
             throw new NullPointerException(Constant.emptyList);
         } else {
+            boolean checkTrue = false;
             for (int i = 0; i < users.size(); i++) {
                 String birthdayUpperCase = birthday.toUpperCase();
                 String birthdayUser = users.get(i).getBirthday().toUpperCase();
                 if (birthdayUpperCase.equals(birthdayUser)) {
                     account = accountUsers.get(i);
-                } else {
-                    throw new NullPointerException(Constant.noBirthday);
+                    checkTrue = true;
+                    break;
                 }
+            }
+            if(!checkTrue) {
+                throw new NullPointerException(Constant.noBirthday);
             }
         }
         return account;
