@@ -1,7 +1,12 @@
 package com.managebankaccount.managebankaccount.details;
 
+import com.managebankaccount.managebankaccount.details.advice.AlreadyReported;
+import com.managebankaccount.managebankaccount.details.advice.ConditionWithDraw;
+import com.managebankaccount.managebankaccount.details.advice.NoSpaceInPassword;
 import com.managebankaccount.managebankaccount.details.beans.AccountUsers;
 import com.managebankaccount.managebankaccount.details.beans.User;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -10,26 +15,23 @@ import java.util.*;
 @Service
 public class AccountServiceImpl {
 
-    List<AccountUsers> accountUsers = new ArrayList<>();
+    public List<AccountUsers> accountUsers = new ArrayList<>();
 
     List<User> users = new ArrayList<>();
 
     public AccountUsers addAccount(AccountUsers account) {
-        for (AccountUsers check : accountUsers) {
-            account.setIdAccount(account.getIdAccount());
-            if (check.getIdAccount() == account.getIdAccount()) {
-                throw new RuntimeException(Constant.sameId);
+        for (AccountUsers accountUser : accountUsers) {
+            if (account.getIdAccount() == accountUser.getIdAccount()) {
+                throw new AlreadyReported(accountUser.getIdAccount());
             }
         }
         String password = account.getPassword();
         if (password.trim().isEmpty()) {
-            throw new RuntimeException(Constant.noPassword);
+            throw new NullPointerException("Password can not empty");
         }
         for (char ch : password.toCharArray()) {
             if (ch == ' ') {
-                throw new RuntimeException(Constant.noSpaceInPassword);
-            } else {
-                account.setPassword(password);
+                throw new NoSpaceInPassword();
             }
         }
         accountUsers.add(account);
@@ -37,17 +39,18 @@ public class AccountServiceImpl {
         return account;
     }
 
-    public List<AccountUsers> updateAccount(int idAccount, AccountUsers account) {
+    public AccountUsers updateAccount(int idAccount, AccountUsers account) {
         if (accountUsers.isEmpty()) {
-            throw new RuntimeException(Constant.emptyList);
+            throw new NullPointerException(Constant.emptyList);
         } else {
             String password = account.getPassword();
             if (password.trim().isEmpty()) {
-                throw new RuntimeException(Constant.noPassword);
+                throw new NullPointerException("Password can not empty");
             }
             for (char ch : password.toCharArray()) {
                 if (ch == ' ') {
-                    throw new RuntimeException(Constant.noSpaceInPassword);
+                    throw new NoSpaceInPassword();
+
                 } else {
                     account.setPassword(password);
                 }
@@ -57,17 +60,15 @@ public class AccountServiceImpl {
                     accountUsers.get(i).setAccountNumber(account.getAccountNumber());
                     accountUsers.get(i).setUserId(account.getUserId());
                     accountUsers.get(i).setPassword(account.getPassword());
-                    accountUsers.get(i).setBalanceAmount(account.getBalanceAmount());
                 }
             }
         }
-
-        return accountUsers;
+        return account;
     }
 
     public void removeAccount(long idAccount) {
         if (accountUsers.isEmpty()) {
-            throw new RuntimeException(Constant.emptyList);
+            throw new NullPointerException(Constant.emptyList);
         } else {
             for (int i = 0; i < accountUsers.size(); i++) {
                 if (idAccount == accountUsers.get(i).getIdAccount()) {
@@ -79,7 +80,7 @@ public class AccountServiceImpl {
 
     public void removeUser(int id) {
         if (users.isEmpty()) {
-            throw new RuntimeException(Constant.emptyList);
+            throw new NullPointerException(Constant.emptyList);
         } else {
             for (int i = 0; i < users.size(); i++) {
                 if (id == users.get(i).getId()) {
@@ -97,7 +98,7 @@ public class AccountServiceImpl {
                                            AccountUsers account,
                                            @RequestParam double deposit) {
         if (accountUsers.isEmpty()) {
-            throw new RuntimeException(Constant.emptyList);
+            throw new NullPointerException(Constant.emptyList);
         } else {
             for (int i = 0; i < accountUsers.size(); i++) {
                 if (idAccount == accountUsers.get(i).getIdAccount()) {
@@ -114,7 +115,7 @@ public class AccountServiceImpl {
                                             int idAccount,
                                             @RequestParam double withDraw) {
         if (accountUsers.isEmpty()) {
-            System.out.println(Constant.emptyList);
+            throw new NullPointerException(Constant.emptyList);
         } else {
             for (int i = 0; i < accountUsers.size(); i++) {
                 if (idAccount == accountUsers.get(i).getIdAccount()) {
@@ -122,7 +123,7 @@ public class AccountServiceImpl {
                         double withDrawMoney = accountUsers.get(i).getBalanceAmount() - withDraw;
                         accountUsers.get(i).setBalanceAmount(withDrawMoney);
                     } else {
-                        throw new RuntimeException(Constant.conditionWithDraw);
+                        throw new ConditionWithDraw();
                     }
                 }
 
@@ -136,7 +137,7 @@ public class AccountServiceImpl {
         for (User check : users) {
             user.setId(user.getId());
             if (check.getId() == user.getId()) {
-                throw new RuntimeException(Constant.sameId);
+                throw new AlreadyReported(user.getId());
             }
         }
         users.add(user);
@@ -149,9 +150,9 @@ public class AccountServiceImpl {
     public AccountUsers findAccountByName(@RequestParam String name) {
         AccountUsers account = new AccountUsers();
         if (accountUsers.isEmpty()) {
-            throw new RuntimeException(Constant.emptyList);
+            throw new NullPointerException(Constant.emptyList);
         } else if (users.isEmpty()) {
-            throw new RuntimeException(Constant.emptyList);
+            throw new NullPointerException(Constant.emptyList);
         } else {
             for (int i = 0; i < users.size(); i++) {
                 String nameUpperCase = name.toUpperCase();
@@ -159,7 +160,7 @@ public class AccountServiceImpl {
                 if (nameUpperCase.equals(nameUser)) {
                     account = accountUsers.get(i);
                 } else {
-                    throw new RuntimeException("There isn't name in list");
+                    throw new NullPointerException(Constant.noName);
                 }
             }
         }
@@ -169,9 +170,9 @@ public class AccountServiceImpl {
     public AccountUsers findAccountByBirthday(@RequestParam String birthday) {
         AccountUsers account = new AccountUsers();
         if (accountUsers.isEmpty()) {
-            throw new RuntimeException(Constant.emptyList);
+            throw new NullPointerException(Constant.emptyList);
         } else if (users.isEmpty()) {
-            throw new RuntimeException(Constant.emptyList);
+            throw new NullPointerException(Constant.emptyList);
         } else {
             for (int i = 0; i < users.size(); i++) {
                 String birthdayUpperCase = birthday.toUpperCase();
@@ -179,7 +180,7 @@ public class AccountServiceImpl {
                 if (birthdayUpperCase.equals(birthdayUser)) {
                     account = accountUsers.get(i);
                 } else {
-                    throw new RuntimeException("There isn't birthday in list");
+                    throw new NullPointerException(Constant.noBirthday);
                 }
             }
         }

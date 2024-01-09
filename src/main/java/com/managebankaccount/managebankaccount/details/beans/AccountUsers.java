@@ -1,5 +1,7 @@
 package com.managebankaccount.managebankaccount.details.beans;
 
+import org.springframework.http.HttpStatus;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

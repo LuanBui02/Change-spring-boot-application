@@ -3,13 +3,14 @@ package com.managebankaccount.managebankaccount.details.service;
 import com.managebankaccount.managebankaccount.details.beans.AccountUsers;
 import com.managebankaccount.managebankaccount.details.beans.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-
+@Repository
 public interface AccountService extends JpaRepository<AccountUsers, Long>{
     AccountUsers addAccount(AccountUsers account);
-    List<AccountUsers> updateAccount(int idAccount, AccountUsers account);
+    AccountUsers updateAccount(int idAccount, AccountUsers account);
     void removeAccount(long idAccount);
     List<AccountUsers> showAllAccount();
     List<AccountUsers> depositMoney(int id,
