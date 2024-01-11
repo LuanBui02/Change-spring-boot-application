@@ -3,9 +3,9 @@ package com.managebankaccount.managebankaccount.service.impl;
 import com.managebankaccount.managebankaccount.utils.Constant;
 import com.managebankaccount.managebankaccount.DTO.AccountDto;
 import com.managebankaccount.managebankaccount.beans.Users;
-import com.managebankaccount.managebankaccount.accountException.AlreadyReported;
-import com.managebankaccount.managebankaccount.accountException.ConditionWithDraw;
-import com.managebankaccount.managebankaccount.accountException.NoSpaceInPassword;
+import com.managebankaccount.managebankaccount.accountException.AlreadyReportedException;
+import com.managebankaccount.managebankaccount.accountException.ConditionWithDrawException;
+import com.managebankaccount.managebankaccount.accountException.NoSpaceInPasswordException;
 import com.managebankaccount.managebankaccount.beans.AccountUsers;
 import com.managebankaccount.managebankaccount.repository.AccountRepository;
 import com.managebankaccount.managebankaccount.repository.UserRepository;
@@ -36,7 +36,7 @@ public class AccountServiceImpl implements AccountService {
         for (int i = 0; i < accountRepository.findAll().size(); i++) {
 
             if (Objects.equals(account.getIdAccount(), accountRepository.findAll().get(i).getIdAccount())) {
-                throw new AlreadyReported(accountRepository.findAll().get(i).getIdAccount());
+                throw new AlreadyReportedException(accountRepository.findAll().get(i).getIdAccount());
             }
         }
         String password = account.getPassword();
@@ -45,7 +45,7 @@ public class AccountServiceImpl implements AccountService {
         }
         for (char ch : password.toCharArray()) {
             if (ch == ' ') {
-                throw new NoSpaceInPassword();
+                throw new NoSpaceInPasswordException();
             }
         }
         accountRepository.save(account);
@@ -62,7 +62,7 @@ public class AccountServiceImpl implements AccountService {
             }
             for (char ch : password.toCharArray()) {
                 if (ch == ' ') {
-                    throw new NoSpaceInPassword();
+                    throw new NoSpaceInPasswordException();
 
                 } else {
                     account.setPassword(password);
@@ -145,7 +145,7 @@ public class AccountServiceImpl implements AccountService {
                         account.setBalanceAmount(accountRepository.findAll().get(i).getBalanceAmount());
                         accountRepository.save(accountRepository.findAll().get(i));
                     } else {
-                        throw new ConditionWithDraw();
+                        throw new ConditionWithDrawException();
                     }
                 }
 
@@ -164,7 +164,7 @@ public class AccountServiceImpl implements AccountService {
 
         for (int i = 0; i < userRepository.findAll().size(); i++) {
             if (Objects.equals(userRepository.findAll().get(i).getId(), user.getId())) {
-                throw new AlreadyReported(user.getId());
+                throw new AlreadyReportedException(user.getId());
             }
         }
         userRepository.save(user);
