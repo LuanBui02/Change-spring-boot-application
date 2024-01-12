@@ -8,16 +8,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 public interface AccountService {
     void addAccount(AccountDto account);
-    AccountDto updateAccount(int idAccount, AccountDto account);
+    AccountUsers updateAccount(long idAccount, AccountUsers account);
     void removeAccount(long idAccount);
     List<AccountDto> showAllAccount();
-    AccountDto depositMoney(int id, AccountDto account, double deposit);
-    AccountDto withDrawMoney(AccountDto account,
-                                     int idAccount,
+    String depositMoney(long id, AccountDto account, double deposit);
+    String withDrawMoney(AccountDto account,
+                                     long idAccount,
                                      @RequestParam double withDraw);
-    AccountUsers findAccountByName(String name);
+    AccountUsers findAccountByName(String name );
     AccountUsers findAccountByBirthday(String birthday);
     void addUsers(Users user);
     List<Users> showUser();
-    void removeUser(int id);
+    void removeUser(long id);
 }

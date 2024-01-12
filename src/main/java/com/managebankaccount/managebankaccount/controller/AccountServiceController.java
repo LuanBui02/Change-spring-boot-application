@@ -22,7 +22,7 @@ public class AccountServiceController {
         accountService.addAccount(account);
     }
     @PutMapping("/course/{idAccount}")
-    public AccountDto putNew(@PathVariable int idAccount, @RequestBody AccountDto account) {
+    public AccountUsers putNew(@PathVariable int idAccount, @RequestBody AccountUsers account) {
 
         return accountService.updateAccount(idAccount,account);
     }
@@ -34,13 +34,13 @@ public class AccountServiceController {
 
     //
     @GetMapping("/course/deposit/{idAccount}")
-    public AccountDto changeDeposit(@PathVariable int idAccount,
+    public String changeDeposit(@PathVariable int idAccount,
                                             @RequestParam(value = "deposit", required = true) double deposit
                                             ,AccountDto account) {
         return accountService.depositMoney(idAccount, account, deposit);
     }
     @GetMapping("/course/withDraw/{idAccount}")
-    public AccountDto changeWithDraw(@PathVariable int idAccount,
+    public String changeWithDraw(@PathVariable int idAccount,
                                            AccountDto account,
                                              @RequestParam(value = "withDraw") double withDraw) {
         return accountService.withDrawMoney(account, idAccount, withDraw);
@@ -48,7 +48,7 @@ public class AccountServiceController {
     //
     @GetMapping("/course/name")
     public AccountUsers findName(@RequestParam(value = "name") String name) {
-         return accountService.findAccountByName(name);
+         return accountService.findAccountByName(name );
     }
     @GetMapping("/course/birthday")
     public AccountUsers findBirthday(@RequestParam(value = "birthday") String birthday) {

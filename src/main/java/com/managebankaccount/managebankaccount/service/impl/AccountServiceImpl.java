@@ -10,7 +10,9 @@ import com.managebankaccount.managebankaccount.beans.AccountUsers;
 import com.managebankaccount.managebankaccount.repository.AccountRepository;
 import com.managebankaccount.managebankaccount.repository.UserRepository;
 import com.managebankaccount.managebankaccount.service.AccountService;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -33,15 +35,21 @@ public class AccountServiceImpl implements AccountService {
         account.setUserId(dto.getUserId());
         account.setPassword(dto.getPassword());
         account.setBalanceAmount(dto.getBalanceAmount());
-        for (int i = 0; i < accountRepository.findAll().size(); i++) {
 
-            if (Objects.equals(account.getIdAccount(), accountRepository.findAll().get(i).getIdAccount())) {
-                throw new AlreadyReportedException(accountRepository.findAll().get(i).getIdAccount());
-            }
+        Optional<AccountUsers> findIdDB = accountRepository.findById(account.getIdAccount());
+        long getIdDb = account.getIdAccount();
+
+        if(findIdDB.isEmpty()) {
+            account.setIdAccount(getIdDb);
+        } else if (findIdDB.get().getIdAccount() == getIdDb) {
+            throw new AlreadyReportedException(getIdDb);
+        } else {
+            account.setIdAccount(getIdDb);
         }
+
         String password = account.getPassword();
         if (password.trim().isEmpty()) {
-            throw new NullPointerException("Password can not empty");
+            throw new NullPointerException(Constant.emptyPassword);
         }
         for (char ch : password.toCharArray()) {
             if (ch == ' ') {
@@ -52,13 +60,15 @@ public class AccountServiceImpl implements AccountService {
 
     }
 
-    public AccountDto updateAccount(int idAccount, AccountDto account) {
+    public AccountUsers updateAccount(long idAccount, AccountUsers account) {
+
         if (accountRepository.findAll().isEmpty()) {
             throw new NullPointerException(Constant.emptyList);
         } else {
             String password = account.getPassword();
+
             if (password.trim().isEmpty()) {
-                throw new NullPointerException("Password can not empty");
+                throw new NullPointerException(Constant.emptyPassword);
             }
             for (char ch : password.toCharArray()) {
                 if (ch == ' ') {
@@ -68,13 +78,17 @@ public class AccountServiceImpl implements AccountService {
                     account.setPassword(password);
                 }
             }
-            for (int i = 0; i < accountRepository.findAll().size(); i++) {
-                if (idAccount == accountRepository.findAll().get(i).getIdAccount()) {
-                    accountRepository.findAll().get(i).setAccountNumber(account.getAccountNumber());
-                    accountRepository.findAll().get(i).setUserId(account.getUserId());
-                    accountRepository.findAll().get(i).setPassword(account.getPassword());
-                    accountRepository.save(accountRepository.findAll().get(i));
-                }
+            if(accountRepository.findById(idAccount).isPresent()) {
+                AccountUsers newAccount = accountRepository.findById(idAccount).get();
+
+                newAccount.setAccountNumber(account.getAccountNumber());
+                newAccount.setPassword(account.getPassword());
+                newAccount.setUserId(account.getUserId());
+
+                accountRepository.save(newAccount);
+
+            } else {
+                throw new NullPointerException(Constant.noList);
             }
         }
 
@@ -82,14 +96,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     public void removeAccount(long idAccount) {
-        if (accountRepository.findAll().isEmpty()) {
+        if(accountRepository.findAll().isEmpty()) {
             throw new NullPointerException(Constant.emptyList);
+        }
+        if(accountRepository.findById(idAccount).isEmpty()) {
+            throw new NullPointerException(Constant.noList);
         } else {
-            for (int i = 0; i < accountRepository.findAll().size(); i++) {
-                if (idAccount == accountRepository.findAll().get(i).getIdAccount()) {
-                    accountRepository.deleteById(accountRepository.findAll().get(i).getIdAccount());
-                }
-            }
+            accountRepository.deleteById(idAccount);
         }
     }
 
@@ -106,52 +119,46 @@ public class AccountServiceImpl implements AccountService {
                 }).collect(Collectors.toList());
     }
 
-    public AccountDto depositMoney(int idAccount,
+    public String depositMoney(long idAccount,
                                     AccountDto account,
                                     @RequestParam double deposit) {
         if (accountRepository.findAll().isEmpty()) {
             throw new NullPointerException(Constant.emptyList);
         } else {
-            for (int i = 0; i < accountRepository.findAll().size(); i++) {
-                if (idAccount == accountRepository.findAll().get(i).getIdAccount()) {
-                    double depositMoney = deposit + accountRepository.findAll().get(i).getBalanceAmount();
-                    accountRepository.findAll().get(i).setBalanceAmount(depositMoney);
-                    account.setIdAccount(accountRepository.findAll().get(i).getIdAccount());
-                    account.setAccountNumber(accountRepository.findAll().get(i).getAccountNumber());
-                    account.setUserId(accountRepository.findAll().get(i).getUserId());
-                    account.setPassword(accountRepository.findAll().get(i).getPassword());
-                    account.setBalanceAmount(accountRepository.findAll().get(i).getBalanceAmount());
-                    accountRepository.save(accountRepository.findAll().get(i));
-                }
+            Optional<AccountUsers> findIdDB = accountRepository.findById(account.getIdAccount());
+
+            if(findIdDB.isEmpty()) {
+                throw new NullPointerException(Constant.noList);
+            } else if (idAccount == findIdDB.get().getIdAccount()) {
+                double depositMoney = deposit + findIdDB.get().getBalanceAmount();
+                findIdDB.get().setBalanceAmount(depositMoney);
+
+                accountRepository.save(findIdDB.get());
             }
         }
-        return account;
+        return String.format("BalanceAmount of account %d is: %f",idAccount,accountRepository.findById(idAccount).get().getBalanceAmount());
     }
-    public AccountDto withDrawMoney(AccountDto account,
-                                            int idAccount,
+    public String withDrawMoney(AccountDto account,
+                                            long idAccount,
                                             @RequestParam double withDraw) {
         if (accountRepository.findAll().isEmpty()) {
             throw new NullPointerException(Constant.emptyList);
-        } else {
-            for (int i = 0; i < accountRepository.findAll().size(); i++) {
-                if (idAccount == accountRepository.findAll().get(i).getIdAccount()) {
-                    if (accountRepository.findAll().get(i).getBalanceAmount() >= withDraw) {
-                        double withDrawMoney = accountRepository.findAll().get(i).getBalanceAmount() - withDraw;
-                        accountRepository.findAll().get(i).setBalanceAmount(withDrawMoney);
-                        account.setIdAccount(accountRepository.findAll().get(i).getIdAccount());
-                        account.setAccountNumber(accountRepository.findAll().get(i).getAccountNumber());
-                        account.setUserId(accountRepository.findAll().get(i).getUserId());
-                        account.setPassword(accountRepository.findAll().get(i).getPassword());
-                        account.setBalanceAmount(accountRepository.findAll().get(i).getBalanceAmount());
-                        accountRepository.save(accountRepository.findAll().get(i));
-                    } else {
-                        throw new ConditionWithDrawException();
-                    }
-                }
+        }
+        Optional<AccountUsers> findIdDB = accountRepository.findById(account.getIdAccount());
+        if(findIdDB.isEmpty()) {
+            throw new NullPointerException(Constant.noList);
+        }
+        if(findIdDB.get().getIdAccount() == idAccount) {
+            if(findIdDB.get().getBalanceAmount() >= withDraw) {
+                double withDrawMoney = findIdDB.get().getBalanceAmount() - withDraw;
+                findIdDB.get().setBalanceAmount(withDrawMoney);
 
+                accountRepository.save(findIdDB.get());
+            } else {
+                throw new ConditionWithDrawException();
             }
         }
-        return account;
+        return String.format("BalanceAmount of account %d is: %f",idAccount,accountRepository.findById(idAccount).get().getBalanceAmount());
     }
     public void addUsers(Users users) {
         Users user = new Users();
@@ -162,10 +169,15 @@ public class AccountServiceImpl implements AccountService {
         user.setBirthday(users.getBirthday());
         user.setIdNumber(users.getIdNumber());
 
-        for (int i = 0; i < userRepository.findAll().size(); i++) {
-            if (Objects.equals(userRepository.findAll().get(i).getId(), user.getId())) {
-                throw new AlreadyReportedException(user.getId());
-            }
+        Optional<Users> findIdDB = userRepository.findById(users.getId());
+        long getIdDb = users.getId();
+
+        if(findIdDB.isEmpty()) {
+            users.setId(getIdDb);
+        } else if (findIdDB.get().getId() == getIdDb) {
+            throw new AlreadyReportedException(getIdDb);
+        } else {
+            users.setId(getIdDb);
         }
         userRepository.save(user);
     }
@@ -174,15 +186,13 @@ public class AccountServiceImpl implements AccountService {
         return userRepository.findAll();
     }
 
-    public void removeUser(int id) {
+    public void removeUser(long id) {
         if (userRepository.findAll().isEmpty()) {
             throw new NullPointerException(Constant.emptyList);
+        } if(userRepository.findById(id).isEmpty()) {
+            throw new NullPointerException(Constant.noList);
         } else {
-            for (int i = 0; i < userRepository.findAll().size(); i++) {
-                if (id == userRepository.findAll().get(i).getId()) {
-                    userRepository.deleteById(userRepository.findAll().get(i).getId());
-                }
-            }
+            userRepository.deleteById(id);
         }
     }
 
@@ -194,6 +204,8 @@ public class AccountServiceImpl implements AccountService {
             throw new NullPointerException(Constant.emptyList);
         } else if (userRepository.findAll().isEmpty()) {
             throw new NullPointerException(Constant.emptyList);
+        } else if(accountRepository.findAll().size() < userRepository.findAll().size()) {
+            throw new NullPointerException(Constant.compareSize);
         } else {
             boolean checkTrue = false;
             for (int i = 0; i < userRepository.findAll().size(); i++) {

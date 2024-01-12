@@ -25,8 +25,10 @@ public class Constant {
     public static final String removed = "Element has removed in list";
     public static final String noPassword = "There is no password";
     public static final String noSpaceInPassword = "No space in password";
+    public static final String emptyPassword = "Password can not empty";
     public static final String sameId = "List have same id";
     public static final String notSameId = "List have not same id";
+    public static final String compareSize = "Account is less size than user";
 
 
 
